@@ -1,0 +1,78 @@
+{% extends "myapp/base.html" %}
+{% block title %}Users - {{ block.super }}{% endblock %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+      <i class="fas fa-users"></i> Users
+    </h1>
+    <a href="{% url 'user_add' %}" class="btn btn-primary">
+      <i class="fas fa-user-plus"></i> Add User
+    </a>
+  </div>
+  <div class="card form-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user_obj in users %}
+              {% if user_obj.userprofile.role == 'entry_operator' or request.user == user_obj %}
+                <tr>
+                  <td>
+                    <img src="{% if user_obj.userprofile.profile_image %}{{ user_obj.userprofile.profile_image.url }}{% else %}https://via.placeholder.com/40{% endif %}"
+                         alt="Profile"
+                         class="rounded-circle"
+                         width="40"
+                         height="40" />
+                    {{ user_obj.username }}
+                  </td>
+                  <td>{{ user_obj.get_full_name|default:"-" }}</td>
+                  <td>{{ user_obj.email|default:"-" }}</td>
+                  <td>
+                    <span class="badge {% if user_obj.userprofile.role == 'admin' %}bg-danger{% else %}bg-info{% endif %}">
+                      {{ user_obj.userprofile.role|title }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge {% if user_obj.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                      {{ user_obj.is_active|yesno:"Active,Inactive" }}
+                    </span>
+                  </td>
+                  <td>{{ user_obj.last_login|date:"M d, Y H:i"|default:"Never" }}</td>
+                  <td>
+                    <div class="btn-group">
+                      <a href="{% url 'user_edit' user_obj.id %}"
+                         class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                      </a>
+                      {% if user_obj != request.user %}
+                        <a href="{% url 'user_delete' user_obj.id %}"
+                           class="btn btn-danger btn-sm">
+                          <i class="fas fa-trash"></i> Delete
+                        </a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-center">No users found</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

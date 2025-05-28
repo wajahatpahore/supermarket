@@ -1,0 +1,233 @@
+{% extends "myapp/base.html" %}
+{% block title %}
+    {% if user_obj %}
+        Edit
+    {% else %}
+        Add
+    {% endif %}
+    User - {{ block.super }}
+{% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-user"></i>
+            {% if user_obj %}
+                Edit
+            {% else %}
+                Add
+            {% endif %}
+            User
+        </h1>
+    </div>
+    <div class="card form-card">
+        <div class="card-body">
+            <form method="post"
+                  enctype="multipart/form-data"
+                  class="needs-validation"
+                  novalidate>
+                {% csrf_token %}
+                <!-- Basic Information -->
+                <h5 class="mb-3">Basic Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text"
+                               class="form-control"
+                               id="username"
+                               name="username"
+                               value="{{ user_obj.username|default:'' }}"
+                               {% if user_obj %}readonly{% else %}required{% endif %}>
+                        <div class="invalid-feedback">Please enter a username.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email"
+                               class="form-control"
+                               id="email"
+                               name="email"
+                               value="{{ user_obj.email|default:'' }}"
+                               required>
+                        <div class="invalid-feedback">Please enter a valid email.</div>
+                    </div>
+                </div>
+                <!-- Password Section -->
+                {% if not user_obj %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password1" class="form-label">Password</label>
+                            <input type="password"
+                                   class="form-control"
+                                   id="password1"
+                                   name="password1"
+                                   required>
+                            <div class="invalid-feedback">Please enter a password.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="password2" class="form-label">Confirm Password</label>
+                            <input type="password"
+                                   class="form-control"
+                                   id="password2"
+                                   name="password2"
+                                   required>
+                            <div class="invalid-feedback">Please confirm the password.</div>
+                        </div>
+                    </div>
+                {% endif %}
+                <!-- Personal Information -->
+                <h5 class="mb-3 mt-4">Personal Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text"
+                               class="form-control"
+                               id="first_name"
+                               name="first_name"
+                               value="{{ user_obj.first_name|default:'' }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text"
+                               class="form-control"
+                               id="last_name"
+                               name="last_name"
+                               value="{{ user_obj.last_name|default:'' }}">
+                    </div>
+                </div>
+                <!-- Role and Status -->
+                <h5 class="mb-3 mt-4">Role and Status</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="role" class="form-label">User Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="">Select Role</option>
+                            <option value="admin"
+                                    {% if user_obj.userprofile.role == 'admin' %}selected{% endif %}>Admin</option>
+                            <option value="entry_operator"
+                                    {% if user_obj.userprofile.role == 'entry_operator' or not user_obj %}selected{% endif %}>
+                                Entry Operator
+                            </option>
+                        </select>
+                        <div class="invalid-feedback">Please select a role.</div>
+                    </div>
+                    {% if user_obj %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label d-block">Account Status</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="is_active"
+                                       name="is_active"
+                                       {% if user_obj.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">Active Account</label>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- Contact Information -->
+                <h5 class="mb-3 mt-4">Contact Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <input type="tel"
+                               class="form-control"
+                               id="phone_number"
+                               name="phone_number"
+                               value="{{ user_obj.userprofile.phone_number|default:'' }}">
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3">{{ user_obj.userprofile.address|default:'' }}</textarea>
+                    </div>
+                </div>
+                <!-- Profile Image -->
+                <h5 class="mb-3 mt-4">Profile Image</h5>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        {% if user_obj.userprofile.profile_image %}
+                            <div class="mb-2">
+                                <img src="{{ user_obj.userprofile.profile_image.url }}"
+                                     alt="Current Profile Image"
+                                     class="rounded-circle"
+                                     width="100"
+                                     height="100">
+                            </div>
+                        {% endif %}
+                        <label for="profile_image" class="form-label">
+                            {% if user_obj %}Change{% endif %}
+                            Profile Image
+                        </label>
+                        <input type="file"
+                               class="form-control"
+                               id="profile_image"
+                               name="profile_image"
+                               accept="image/*">
+                    </div>
+                </div>
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'user_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Users
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if user_obj %}
+                            Update
+                        {% else %}
+                            Create
+                        {% endif %}
+                        User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            
+            // Password match validation for new users
+            var password1 = form.querySelector('#password1')
+            var password2 = form.querySelector('#password2')
+            if (password1 && password2) {
+                if (password1.value !== password2.value) {
+                    event.preventDefault()
+                    alert('Passwords do not match!')
+                    return
+                }
+            }
+            
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Profile image preview
+document.getElementById('profile_image')?.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files[0]) {
+        var reader = new FileReader()
+        reader.onload = function(e) {
+            var preview = document.querySelector('img.rounded-circle')
+            if (!preview) {
+                preview = document.createElement('img')
+                preview.className = 'rounded-circle mb-2'
+                preview.width = 100
+                preview.height = 100
+                this.parentElement.insertBefore(preview, this)
+            }
+            preview.src = e.target.result
+        }
+        reader.readAsDataURL(e.target.files[0])
+    }
+})
+    </script>
+{% endblock %}

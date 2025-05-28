@@ -1,0 +1,173 @@
+{% extends "myapp/base.html" %}
+{% block title %}{% if is_edit %}Edit Order{% else %}Create Order{% endif %} - {{ block.super }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shopping-cart"></i> {% if is_edit %}Edit Order{% else %}Create New Order{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if is_admin and not is_edit %}
+                        <div class="mb-3">
+                            <label for="customer" class="form-label">Customer</label>
+                            <select name="customer" id="customer" class="form-select" required>
+                                <option value="">Select Customer</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.get_full_name|default:customer.username }} (Entry Operator)</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select a customer.</div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="product" class="form-label">Product</label>
+                            <select name="product" id="product" class="form-select" required {% if is_edit %}disabled{% endif %}>
+                                <option value="">Select Product</option>
+                                {% for product in products %}
+                                    <option value="{{ product.id }}" 
+                                            data-price="{{ product.price }}"
+                                            data-stock="{{ product.quantity_in_stock }}"
+                                            {% if is_edit and order.product.id == product.id %}selected{% endif %}>
+                                        {{ product.name }} - ${{ product.price }} (Stock: {{ product.quantity_in_stock }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select a product.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" name="quantity" id="quantity" class="form-control" 
+                                   min="1" required value="{% if is_edit %}{{ order.quantity }}{% else %}1{% endif %}">
+                            <div class="invalid-feedback">Please enter a valid quantity.</div>
+                            <div id="stockWarning" class="text-danger mt-1" style="display: none;">
+                                <i class="fas fa-exclamation-triangle"></i> <span id="stockWarningText"></span>
+                            </div>
+                        </div>
+
+                        {% if is_edit %}
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select" required>
+                                <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                                <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="total_price" class="form-label">Total Price</label>
+                            <input type="text" id="total_price" class="form-control" readonly>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="{% url 'order_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Orders
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {% if is_edit %}Update Order{% else %}Create Order{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productSelect = document.getElementById('product');
+    const quantityInput = document.getElementById('quantity');
+    const totalPriceInput = document.getElementById('total_price');
+    const stockWarning = document.getElementById('stockWarning');
+    const stockWarningText = document.getElementById('stockWarningText');
+    
+    function updateTotalPrice() {
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        if (!selectedOption.value) {
+            totalPriceInput.value = '';
+            stockWarning.style.display = 'none';
+            return;
+        }
+
+        const price = parseFloat(selectedOption.dataset.price) || 0;
+        const quantity = parseInt(quantityInput.value) || 0;
+        const stock = parseInt(selectedOption.dataset.stock) || 0;
+        const total = price * quantity;
+        
+        totalPriceInput.value = '$' + total.toFixed(2);
+        
+        // Check stock
+        if (quantity > stock) {
+            stockWarningText.textContent = `Warning: Only ${stock} items available in stock!`;
+            stockWarning.style.display = 'block';
+        } else {
+            stockWarning.style.display = 'none';
+        }
+    }
+    
+    productSelect.addEventListener('change', updateTotalPrice);
+    quantityInput.addEventListener('input', updateTotalPrice);
+    
+    // Initial calculation
+    updateTotalPrice();
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        if (!selectedOption.value) {
+            event.preventDefault();
+            alert('Please select a product.');
+            return;
+        }
+
+        const stock = parseInt(selectedOption.dataset.stock) || 0;
+        const quantity = parseInt(quantityInput.value) || 0;
+        
+        if (quantity <= 0) {
+            event.preventDefault();
+            alert('Quantity must be greater than 0.');
+            return;
+        }
+        
+        if (quantity > stock) {
+            event.preventDefault();
+            alert(`Cannot order more than available stock (${stock} items).`);
+            return;
+        }
+        
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

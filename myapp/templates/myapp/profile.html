@@ -1,0 +1,110 @@
+{% extends "myapp/base.html" %}
+<!--  -->
+{% block title %}My Profile - {{ block.super }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="{% if user.userprofile.profile_image %}{{ user.userprofile.profile_image.url }}{% else %}https://via.placeholder.com/150{% endif %}"
+                         alt="Profile Image"
+                         class="rounded-circle mb-3"
+                         style="width: 150px; height: 150px; object-fit: cover;">
+                    <h4>{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted">
+                        <span class="badge {% if user.userprofile.role == 'admin' %}bg-danger{% else %}bg-info{% endif %}">
+                            {{ user.userprofile.role|title }}
+                        </span>
+                    </p>
+                    <a href="{% url 'profile_edit' %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Contact Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Phone:</strong> {{ user.userprofile.phone_number|default:"Not provided" }}</p>
+                    <p><strong>Address:</strong> {{ user.userprofile.address|default:"Not provided" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Activity Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6">
+                            <h3>{{ total_orders }}</h3>
+                            <p class="text-muted">Total Orders</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h3>{{ user.date_joined|date:"M Y" }}</h3>
+                            <p class="text-muted">Member Since</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history"></i> Recent Orders
+                    </h5>
+                    <a href="{% url 'order_list' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-list"></i> View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.product.name }}</td>
+                                    <td>{{ order.quantity }}</td>
+                                    <td>${{ order.total_price }}</td>
+                                    <td>
+                                        <span class="badge {% if order.status == 'completed' %}bg-success {% elif order.status == 'pending' %}bg-warning {% elif order.status == 'processing' %}bg-info {% else %}bg-danger{% endif %}">
+                                            {{ order.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No orders yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

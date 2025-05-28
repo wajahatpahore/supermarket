@@ -1,0 +1,21 @@
+{% extends "myapp/base.html" %}
+{% block title %}Logged Out - {{ block.super }}{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                        <h3 class="card-title">You have been logged out</h3>
+                        <p class="card-text text-muted">Thank you for using our system. You have been successfully logged out.</p>
+                        <a href="{% url 'login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Log in again
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+ 

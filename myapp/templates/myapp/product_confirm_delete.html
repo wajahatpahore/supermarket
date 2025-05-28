@@ -1,0 +1,48 @@
+{% extends "myapp/base.html" %}
+{% block title %}Delete Product - {{ block.super }}{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4>
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Product Deletion
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading">Warning!</h5>
+                    <p>
+                        Are you sure you want to delete the product "<strong>{{ product.name }}</strong>"?
+                    </p>
+                    <hr>
+                    <p class="mb-0">This action cannot be undone. All data associated with this product will be permanently removed.</p>
+                </div>
+                <div class="product-details mb-4">
+                    <h6>Product Details:</h6>
+                    <ul class="list-unstyled">
+                        <li>
+                            <strong>Name:</strong> {{ product.name }}
+                        </li>
+                        <li>
+                            <strong>Price:</strong> ${{ product.price }}
+                        </li>
+                        <li>
+                            <strong>Current Stock:</strong> {{ product.quantity_in_stock }} units
+                        </li>
+                    </ul>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'product_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
