@@ -6,6 +6,7 @@ from django.db.models import Count, Sum
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from .models import UserProfile, Product, Order
+from django.contrib.auth.views import LogoutView
 
 def is_admin(user):
     try:
@@ -369,3 +370,21 @@ def profile_edit(request):
             messages.error(request, f'Error updating profile: {str(e)}')
     
     return render(request, 'myapp/profile_form.html', {'user': request.user})
+
+@login_required
+def logout_view(request):
+    """
+    Custom logout view that handles user logout and provides additional functionality
+    """
+    if request.method == 'POST':
+        # Handle POST request (form submission)
+        return LogoutView.as_view(
+            template_name='registration/logged_out.html',
+            next_page='login'
+        )(request)
+    else:
+        # Handle GET request (direct link click)
+        return LogoutView.as_view(
+            template_name='registration/logged_out.html',
+            next_page='login'
+        )(request)

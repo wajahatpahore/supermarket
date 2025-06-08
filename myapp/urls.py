@@ -1,15 +1,8 @@
 from django.urls import path
-from django.contrib.auth.views import LogoutView
 from . import views
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
-    
-    # Authentication URLs
-    path('logout/', LogoutView.as_view(
-        template_name='registration/logged_out.html',
-        next_page='login'
-    ), name='logout'),
     
     # Product URLs
     path('products/', views.product_list, name='product_list'),
