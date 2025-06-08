@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,8 +7,6 @@
           content="Supermarket Management System - Manage products, orders and users" />
     <meta name="keywords"
           content="supermarket, management, products, orders, inventory, users" />
-    <link rel="icon" href="{% static 'download.png' %}" type="image/x-icon">
-
     <title>
       {% block title %}Supermarket Management System{% endblock %}
     </title>
@@ -19,6 +16,7 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet" />
+    {% load static %}
     <link href="{% static 'myapp/css/style.css' %}" rel="stylesheet" />
   </head>
   <body>
